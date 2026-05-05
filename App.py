@@ -16,13 +16,14 @@ st.title("Proceso de selección - Informática")
 
 # ===== DATOS PERSONALES =====
 st.header("Datos personales")
+
 nombre = st.text_input("Nombre")
 genero = st.selectbox("Género", ["Hombre", "Mujer", "Otro", "Prefiero no decirlo"])
 edad = st.number_input("Edad", min_value=0)
 
 ubicacion = st.text_input("Ubicación")
 
-# ===== FORMACIÓN =====
+# ===== FORMACIÓN (NUEVO SISTEMA LIMPIO) =====
 st.header("Formación")
 
 nivel = st.selectbox(
@@ -30,30 +31,21 @@ nivel = st.selectbox(
     ["Primaria", "ESO", "Bachillerato", "Formación Profesional", "Grado universitario"]
 )
 
-especialidad = st.text_input("Especialidad / rama")
+opciones_formacion = {
+    "Bachillerato": ["Ciencias y Tecnología", "Humanidades y Sociales", "Artes", "Otros"],
+    "Formación Profesional": ["Informática / Tecnología", "Administración", "Electricidad", "Sanidad", "Otros"],
+    "Grado universitario": ["Ingeniería / Informática", "Matemáticas / Física", "Empresa / Economía", "Otros"]
+}
 
-# ===== RAMAS INDEPENDIENTES =====
-tipo_bach = None
-tipo_fp = None
-tipo_uni = None
+tipo_formacion = None
 
-if nivel == "Bachillerato":
-    tipo_bach = st.selectbox(
-        "¿Qué tipo de Bachillerato tienes?",
-        ["Ciencias y Tecnología", "Humanidades y Sociales", "Artes", "Otros"]
+if nivel in opciones_formacion:
+    tipo_formacion = st.selectbox(
+        "¿Qué especialidad has cursado?",
+        opciones_formacion[nivel]
     )
 
-elif nivel == "Formación Profesional":
-    tipo_fp = st.selectbox(
-        "¿Qué tipo de Formación Profesional tienes?",
-        ["Informática / Tecnología", "Administración", "Electricidad", "Sanidad", "Otros"]
-    )
-
-elif nivel == "Grado universitario":
-    tipo_uni = st.selectbox(
-        "¿Qué tipo de grado universitario tienes?",
-        ["Ingeniería / Informática", "Matemáticas / Física", "Empresa / Economía", "Otros"]
-    )
+especialidad = st.text_input("Observaciones adicionales")
 
 # ===== EXPERIENCIA =====
 st.header("Experiencia y habilidades")
@@ -92,22 +84,18 @@ if st.button("Evaluar candidato"):
         apto = False
         motivos.append("Nivel educativo insuficiente")
 
-    if "informatica" not in especialidad.lower():
-        apto = False
-        motivos.append("Formación no relacionada con informática")
-
     if nivel == "Bachillerato":
-        if tipo_bach != "Ciencias y Tecnología":
+        if tipo_formacion != "Ciencias y Tecnología":
             apto = False
-            motivos.append("Bachillerato no tecnológico")
+            motivos.append("Bachillerato no orientado a tecnología")
 
     if nivel == "Formación Profesional":
-        if tipo_fp != "Informática / Tecnología":
+        if tipo_formacion != "Informática / Tecnología":
             apto = False
             motivos.append("FP no relacionada con informática")
 
     if nivel == "Grado universitario":
-        if tipo_uni != "Ingeniería / Informática":
+        if tipo_formacion != "Ingeniería / Informática":
             apto = False
             motivos.append("Grado no relacionado con informática")
 
@@ -150,11 +138,8 @@ if st.button("Evaluar candidato"):
 📍 Ubicación: {ubicacion}
 
 🎓 Nivel: {nivel}
-📚 Especialidad: {especialidad}
-
-🎓 Bachillerato: {tipo_bach if tipo_bach else "N/A"}
-🎓 FP: {tipo_fp if tipo_fp else "N/A"}
-🎓 Universidad: {tipo_uni if tipo_uni else "N/A"}
+📚 Formación: {tipo_formacion if tipo_formacion else "N/A"}
+📝 Observaciones: {especialidad}
 
 💼 Experiencia: {experiencia} ({años} años)
 💻 Lenguajes: {", ".join(lenguajes)}
@@ -164,7 +149,7 @@ if st.button("Evaluar candidato"):
 ⏱ Disponibilidad: {disponibilidad}
 
 🎯 Resultado: {"APTO" if apto else "NO APTO"}
-📌 Motivo: {motivo_final}
+📌 Motivos: {motivos if motivos else "Ninguno"}
 
 ⭐ Puntuación: {puntuacion}
 💬 Comentario: {comentario}
