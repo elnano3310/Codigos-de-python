@@ -12,9 +12,9 @@ def enviar_telegram(mensaje):
         "text": mensaje
     })
 
-# ===== INTERFAZ =====
 st.title("Proceso de selección - Informática")
 
+# ===== DATOS PERSONALES =====
 st.header("Datos personales")
 nombre = st.text_input("Nombre")
 genero = st.selectbox("Género", ["Hombre", "Mujer", "Otro", "Prefiero no decirlo"])
@@ -22,7 +22,9 @@ edad = st.number_input("Edad", min_value=0)
 
 ubicacion = st.text_input("Ubicación")
 
+# ===== FORMACIÓN =====
 st.header("Formación")
+
 nivel = st.selectbox(
     "Nivel educativo",
     ["Primaria", "ESO", "Bachillerato", "Formación Profesional", "Grado universitario"]
@@ -30,7 +32,32 @@ nivel = st.selectbox(
 
 especialidad = st.text_input("Especialidad / rama")
 
+# ===== RAMAS INDEPENDIENTES =====
+tipo_bach = None
+tipo_fp = None
+tipo_uni = None
+
+if nivel == "Bachillerato":
+    tipo_bach = st.selectbox(
+        "¿Qué tipo de Bachillerato tienes?",
+        ["Ciencias y Tecnología", "Humanidades y Sociales", "Artes", "Otros"]
+    )
+
+elif nivel == "Formación Profesional":
+    tipo_fp = st.selectbox(
+        "¿Qué tipo de Formación Profesional tienes?",
+        ["Informática / Tecnología", "Administración", "Electricidad", "Sanidad", "Otros"]
+    )
+
+elif nivel == "Grado universitario":
+    tipo_uni = st.selectbox(
+        "¿Qué tipo de grado universitario tienes?",
+        ["Ingeniería / Informática", "Matemáticas / Física", "Empresa / Economía", "Otros"]
+    )
+
+# ===== EXPERIENCIA =====
 st.header("Experiencia y habilidades")
+
 experiencia = st.selectbox("¿Tienes experiencia?", ["Sí", "No"])
 años = st.number_input("Años de experiencia", min_value=0)
 
@@ -43,7 +70,9 @@ ingles = st.selectbox("Nivel de inglés", ["Bajo", "Medio", "Alto"])
 equipo = st.slider("Trabajo en equipo", 1, 10)
 disponibilidad = st.selectbox("Disponibilidad", ["Inmediata", "1 mes", "Más de 1 mes"])
 
+# ===== FEEDBACK =====
 st.header("Feedback")
+
 puntuacion = st.slider("Puntuación de la página", 1, 10)
 comentario = st.text_input("Comentario")
 
@@ -53,7 +82,8 @@ if st.button("Evaluar candidato"):
     apto = True
     motivos = []
 
-    # VALIDACIONES
+    # ===== VALIDACIONES =====
+
     if edad < 18:
         apto = False
         motivos.append("Menor de edad")
@@ -66,9 +96,24 @@ if st.button("Evaluar candidato"):
         apto = False
         motivos.append("Formación no relacionada con informática")
 
+    if nivel == "Bachillerato":
+        if tipo_bach != "Ciencias y Tecnología":
+            apto = False
+            motivos.append("Bachillerato no tecnológico")
+
+    if nivel == "Formación Profesional":
+        if tipo_fp != "Informática / Tecnología":
+            apto = False
+            motivos.append("FP no relacionada con informática")
+
+    if nivel == "Grado universitario":
+        if tipo_uni != "Ingeniería / Informática":
+            apto = False
+            motivos.append("Grado no relacionado con informática")
+
     if experiencia == "No":
         apto = False
-        motivos.append("Sin experiencia")
+        motivos.append("Sin experiencia laboral")
 
     if len(lenguajes) == 0:
         apto = False
@@ -82,7 +127,8 @@ if st.button("Evaluar candidato"):
         apto = False
         motivos.append("Baja capacidad de trabajo en equipo")
 
-    # RESULTADO
+    # ===== RESULTADO =====
+
     if apto:
         st.success("✅ APTO para el puesto")
         motivo_final = "Cumple todos los requisitos"
@@ -93,7 +139,8 @@ if st.button("Evaluar candidato"):
             st.write(f"- {m}")
         motivo_final = ", ".join(motivos)
 
-    # TELEGRAM
+    # ===== TELEGRAM =====
+
     mensaje = f"""
 📋 Nuevo candidato:
 
@@ -105,11 +152,15 @@ if st.button("Evaluar candidato"):
 🎓 Nivel: {nivel}
 📚 Especialidad: {especialidad}
 
+🎓 Bachillerato: {tipo_bach if tipo_bach else "N/A"}
+🎓 FP: {tipo_fp if tipo_fp else "N/A"}
+🎓 Universidad: {tipo_uni if tipo_uni else "N/A"}
+
 💼 Experiencia: {experiencia} ({años} años)
 💻 Lenguajes: {", ".join(lenguajes)}
 
 🌍 Inglés: {ingles}
-🤝 Trabajo en equipo: {equipo}/10
+🤝 Equipo: {equipo}/10
 ⏱ Disponibilidad: {disponibilidad}
 
 🎯 Resultado: {"APTO" if apto else "NO APTO"}
@@ -120,3 +171,4 @@ if st.button("Evaluar candidato"):
 """
 
     enviar_telegram(mensaje)
+    st.success("Datos enviados correctamente 📲")
