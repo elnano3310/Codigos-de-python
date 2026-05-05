@@ -12,124 +12,111 @@ def enviar_telegram(mensaje):
         "text": mensaje
     })
 
-# ===== ESTADO =====
-if "paso" not in st.session_state:
-    st.session_state.paso = 0
+# ===== INTERFAZ =====
+st.title("Proceso de selección - Informática")
 
-if "datos" not in st.session_state:
-    st.session_state.datos = {}
+st.header("Datos personales")
+nombre = st.text_input("Nombre")
+genero = st.selectbox("Género", ["Hombre", "Mujer", "Otro", "Prefiero no decirlo"])
+edad = st.number_input("Edad", min_value=0)
 
-if "apto" not in st.session_state:
-    st.session_state.apto = True
+ubicacion = st.text_input("Ubicación")
 
-st.title("Página de empleo de informática")
+st.header("Formación")
+nivel = st.selectbox(
+    "Nivel educativo",
+    ["Primaria", "ESO", "Bachillerato", "Formación Profesional", "Grado universitario"]
+)
 
-# ===== PASO 1 =====
-if st.session_state.paso == 0:
+especialidad = st.text_input("Especialidad / rama")
 
-    st.text_input("Hola, ¿cuál es tu nombre?", key="nombre")
-    st.selectbox("¿Cuál es tu género?", ["Hombre", "Mujer", "Otro", "Prefiero no decirlo"], key="genero")
-    st.number_input("¿Cuántos años tienes?", min_value=0, step=1, key="edad")
+st.header("Experiencia y habilidades")
+experiencia = st.selectbox("¿Tienes experiencia?", ["Sí", "No"])
+años = st.number_input("Años de experiencia", min_value=0)
 
-    if st.button("Continuar"):
-        st.session_state.datos["nombre"] = st.session_state.nombre
-        st.session_state.datos["genero"] = st.session_state.genero
-        st.session_state.datos["edad"] = st.session_state.edad
+lenguajes = st.multiselect(
+    "Lenguajes de programación",
+    ["Python", "Java", "C++", "JavaScript", "Otros"]
+)
 
-        if st.session_state.edad < 16:
-            st.session_state.apto = False
+ingles = st.selectbox("Nivel de inglés", ["Bajo", "Medio", "Alto"])
+equipo = st.slider("Trabajo en equipo", 1, 10)
+disponibilidad = st.selectbox("Disponibilidad", ["Inmediata", "1 mes", "Más de 1 mes"])
 
-        st.session_state.paso += 1
+st.header("Feedback")
+puntuacion = st.slider("Puntuación de la página", 1, 10)
+comentario = st.text_input("Comentario")
 
-# ===== PASO 2 =====
-elif st.session_state.paso == 1:
+# ===== BOTÓN FINAL =====
+if st.button("Evaluar candidato"):
 
-    st.text_input("¿Dónde vives?", key="ubicacion")
+    apto = True
+    motivos = []
 
-    st.selectbox(
-        "¿Cuál es tu nivel educativo?",
-        ["Primaria", "ESO", "Bachillerato", "Formación Profesional", "Grado universitario"],
-        key="nivel"
-    )
+    # VALIDACIONES
+    if edad < 18:
+        apto = False
+        motivos.append("Menor de edad")
 
-    if st.button("Continuar"):
-        st.session_state.datos["ubicacion"] = st.session_state.ubicacion
-        st.session_state.datos["nivel"] = st.session_state.nivel
+    if nivel in ["Primaria", "ESO"]:
+        apto = False
+        motivos.append("Nivel educativo insuficiente")
 
-        if st.session_state.nivel in ["Primaria", "ESO"]:
-            st.session_state.apto = False
+    if "informatica" not in especialidad.lower():
+        apto = False
+        motivos.append("Formación no relacionada con informática")
 
-        st.session_state.paso += 1
+    if experiencia == "No":
+        apto = False
+        motivos.append("Sin experiencia")
 
-# ===== PASO 3 =====
-elif st.session_state.paso == 2:
+    if len(lenguajes) == 0:
+        apto = False
+        motivos.append("No conoce lenguajes de programación")
 
-    nivel = st.session_state.datos["nivel"]
+    if ingles == "Bajo":
+        apto = False
+        motivos.append("Nivel de inglés bajo")
 
-    if nivel == "Bachillerato":
-        st.selectbox("Tipo de bachillerato", ["Tecnológico", "Otros"], key="tipo_bach")
+    if equipo < 5:
+        apto = False
+        motivos.append("Baja capacidad de trabajo en equipo")
 
-    if nivel == "Formación Profesional":
-        st.selectbox("Tipo de FP", ["Informática", "Otros"], key="tipo_fp")
-
-    if nivel == "Grado universitario":
-        st.selectbox("Grado", ["Ingeniería Informática", "Otros"], key="tipo_uni")
-
-    st.selectbox("¿Tienes experiencia?", ["Sí", "No"], key="experiencia")
-
-    if st.session_state.experiencia == "Sí":
-        st.number_input("¿Cuántos años de experiencia?", min_value=0, key="años")
-
-    if st.button("Continuar"):
-
-        nivel = st.session_state.datos["nivel"]
-
-        # VALIDACIONES
-        if nivel == "Bachillerato" and st.session_state.tipo_bach != "Tecnológico":
-            st.session_state.apto = False
-
-        if nivel == "Formación Profesional" and st.session_state.tipo_fp != "Informática":
-            st.session_state.apto = False
-
-        if nivel == "Grado universitario" and st.session_state.tipo_uni != "Ingeniería Informática":
-            st.session_state.apto = False
-
-        st.session_state.datos["experiencia"] = st.session_state.experiencia
-
-        st.session_state.paso += 1
-
-# ===== PASO 4 =====
-elif st.session_state.paso == 3:
-
-    puntuacion = st.slider("¿Qué puntuación le das a la página?", 1, 10)
-    comentario = st.text_input("¿Alguna sugerencia?")
-
-    # RESULTADO FINAL
-    if st.session_state.apto:
-        st.success("✅ Eres APTO para el puesto")
-        resultado = "APTO"
+    # RESULTADO
+    if apto:
+        st.success("✅ APTO para el puesto")
+        motivo_final = "Cumple todos los requisitos"
     else:
-        st.error("❌ No cumples los requisitos")
-        resultado = "NO APTO"
+        st.error("❌ NO APTO")
+        st.write("Motivos:")
+        for m in motivos:
+            st.write(f"- {m}")
+        motivo_final = ", ".join(motivos)
 
-    if st.button("Enviar"):
-
-        d = st.session_state.datos
-
-        mensaje = f"""
+    # TELEGRAM
+    mensaje = f"""
 📋 Nuevo candidato:
 
-👤 Nombre: {d.get("nombre")}
-⚧ Género: {d.get("genero")}
-🎂 Edad: {d.get("edad")}
-📍 Ubicación: {d.get("ubicacion")}
-🎓 Nivel: {d.get("nivel")}
-💼 Experiencia: {d.get("experiencia")}
-🎯 Resultado: {resultado}
+👤 Nombre: {nombre}
+⚧ Género: {genero}
+🎂 Edad: {edad}
+📍 Ubicación: {ubicacion}
+
+🎓 Nivel: {nivel}
+📚 Especialidad: {especialidad}
+
+💼 Experiencia: {experiencia} ({años} años)
+💻 Lenguajes: {", ".join(lenguajes)}
+
+🌍 Inglés: {ingles}
+🤝 Trabajo en equipo: {equipo}/10
+⏱ Disponibilidad: {disponibilidad}
+
+🎯 Resultado: {"APTO" if apto else "NO APTO"}
+📌 Motivo: {motivo_final}
+
 ⭐ Puntuación: {puntuacion}
 💬 Comentario: {comentario}
 """
 
-        enviar_telegram(mensaje)
-
-        st.success("Datos enviados correctamente 📲")
+    enviar_telegram(mensaje)
